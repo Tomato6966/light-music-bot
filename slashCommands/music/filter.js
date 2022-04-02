@@ -5,12 +5,12 @@ module.exports = {
     description: "Applys/Removes Filters of the Queue",
     run: async (client, interaction, args, prefix) => {
         try {
-            if(!interaction.member.voice.channelId) return interaction.reply({content: "👎 **Please join a Voice-Channel first!**"}).catch(() => null);
+            if(!interaction.member.voice.channelId) return interaction.reply(({ ephemeral: true, content: "👎 **Please join a Voice-Channel first!**"})).catch(() => null);
             const oldConnection = getVoiceConnection(interaction.guild.id);
-            if(!oldConnection) return interaction.reply({ content: `👎 **I'm not connected somewhere**!`}).catch(() => null);
+            if(!oldConnection) return interaction.reply({ ephemeral: true, content:`👎 **I'm not connected somewhere**!`}).catch(() => null);
             
             const queue = client.queues.get(interaction.guild.id);
-            if(!queue) return interaction.reply({ content: `👎 **I'm nothing playing right now.**`}).catch(() => null);
+            if(!queue) return interaction.reply({ ephemeral: true, content:`👎 **I'm nothing playing right now.**`}).catch(() => null);
             
             const options = Object.keys(queue.effects)
             
@@ -64,7 +64,7 @@ module.exports = {
             })
         } catch(e) { 
             console.error(e);
-            interaction.reply({content: `❌ Something went wrong: \`\`\`${e.interaction || e}`.substring(0, 1950) + `\`\`\``}).catch(() => null);
+            interaction.reply({ ephemeral: true, content:`❌ Something went wrong: \`\`\`${e.interaction || e}`.substring(0, 1950) + `\`\`\``}).catch(() => null);
         }
     },
 };

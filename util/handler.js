@@ -35,21 +35,16 @@ module.exports = async (client) => {
                 })
         })
 
+
     client.on(`ready`, async () => {
-        
         if(client.deploySlash.enabled) {
             if(client.deploySlash.guild) {
-               client.guilds.cache
-               .get(client.deploySlash.guild)
-               .commands.set(slashCommandsArray); 
+                client.guilds.cache.get(client.deploySlash.guild).commands.set(slashCommandsArray); 
             } else {
                 client.application.commands.set(slashCommandsArray);
             }
 
         } 
-        
-        // set it global, for everyone
-        // await client.application.commands.set(slashCommandsArray);
     });
 
     process.on('unhandledRejection', (reason, p) => {

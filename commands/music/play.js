@@ -1,13 +1,19 @@
 const { getVoiceConnection } = require("@discordjs/voice");
 const { default: YouTube } = require('youtube-sr');
-
+const { Permissions } = require("discord.js");
 module.exports = {
     name: "play",
     aliases: ["p"],
     description: "Plays Music in your Voice Channel",
     run: async (client, message, args, prefix) => {
         if(!message.member.voice.channelId) return message.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);
-        const { channel } = message.member.voice; // get the voice channel
+        if(!message.member.voice.channel?.permissionsFor(message.guild?.me)?.has(Permissions.FLAGS.CONNECT)) {
+            return message.reply({ content: "👎 **I'm missing the Permission to Connect to your Voice-Channel!**"}).catch(() => null);
+        }
+        if(!message.member.voice.channel?.permissionsFor(message.guild?.me)?.has(Permissions.FLAGS.SPEAK)) {
+            return message.reply({ content: "👎 **I'm missing the Permission to Speak in your Voice-Channel!**"}).catch(() => null);
+        }
+             
         // get an old connection
         const oldConnection = getVoiceConnection(message.guild.id);
         if(oldConnection && oldConnection.joinConfig.channelId != message.member.voice.channelId) return message.reply("👎 **We are not in the same Voice-Channel**!").catch(() => null);
@@ -29,7 +35,7 @@ module.exports = {
         if(!oldConnection) {
             // try to join the voice channel
             try {
-                await client.joinVoiceChannel(channel)
+                await client.joinVoiceChannel(message.member.voice.channel)
             } catch (e){ console.error(e);
                 return message.reply(`❌ Could not join the VC because: \`\`\`${e.message || e}`.substr(0, 1950) + `\`\`\``).catch(() => null);
             }
@@ -67,7 +73,7 @@ module.exports = {
                 // if there is no queue create one and start playing
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
-                    await client.playSong(channel, song);
+                    await client.playSong(message.member.voice.channel, song);
                     // Add the song to the queue
                     const newQueue = client.createQueue(song, message.author, message.channelId)
                     client.queues.set(message.guild.id, newQueue)
@@ -86,7 +92,7 @@ module.exports = {
                 // if there is no queue create one and start playing
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
-                    await client.playSong(channel, song);
+                    await client.playSong(message.member.voice.channel, song);
                     // Add the playlist songs to the queue
                     const newQueue = client.createQueue(song, message.author, message.channelId)
                     playlist.videos.slice(1).forEach(song => newQueue.tracks.push(client.createSong(song, message.author)))

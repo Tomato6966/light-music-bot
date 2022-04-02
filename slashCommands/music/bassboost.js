@@ -12,17 +12,17 @@ module.exports = {
         },
     ],
     run: async (client, interaction, args, prefix) => {
-        if(!interaction.member.voice.channelId) return interaction.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);
+        if(!interaction.member.voice.channelId) return interaction.reply({ ephemeral: true, content: "👎 **Please join a Voice-Channel first!**"}).catch(() => null);
         // get an old connection
         const oldConnection = getVoiceConnection(interaction.guild.id);
-        if(!oldConnection) return interaction.reply("👎 **I'm not connected somewhere!**")
-        if(oldConnection && oldConnection.joinConfig.channelId != interaction.member.voice.channelId) return interaction.reply("👎 **We are not in the same Voice-Channel**!").catch(() => null);
+        if(!oldConnection) return interaction.reply({ ephemeral: true, content: "👎 **I'm not connected somewhere!**" })
+        if(oldConnection && oldConnection.joinConfig.channelId != interaction.member.voice.channelId) return interaction.reply({ ephemeral: true, content: "👎 **We are not in the same Voice-Channel**!"}).catch(() => null);
         
         const queue = client.queues.get(interaction.guild.id); // get the queue
         if(!queue) { 
-            return interaction.reply(`👎 **Nothing playing right now**`);
+            return interaction.reply({ ephemeral: true, content: `👎 **Nothing playing right now**`});
         }
-        if(args[0] === undefined || isNaN(args[0]) || Number(args[0]) < 0 || Number(args[0]) > 20) return interaction.reply(`👎 **No __valid__ Bassboost-Level between 0 and 20 db provided!** Usage: \`${prefix}bassboost 6\``).catch(() => null);
+        if(args[0] === undefined || isNaN(args[0]) || Number(args[0]) < 0 || Number(args[0]) > 20) return interaction.reply({ ephemeral: true, content: `👎 **No __valid__ Bassboost-Level between 0 and 20 db provided!** Usage: \`${prefix}bassboost 6\``}).catch(() => null);
         const bassboost = Number(args[0]);
         queue.effects.bassboost = bassboost;
 
@@ -32,6 +32,6 @@ module.exports = {
         oldConnection.state.subscription.player.stop();
         oldConnection.state.subscription.player.play(client.getResource(queue, queue.tracks[0].id, curPos));
     
-        return interaction.reply(`🎚 **Successfully changed the Bassboost-Level to \`${bassboost}db\`**`).catch(() => null);
+        return interaction.reply({ ephemeral: false, content: `🎚 **Successfully changed the Bassboost-Level to \`${bassboost}db\`**`}).catch(() => null);
     },
 };

@@ -19,7 +19,7 @@ module.exports = {
 
         // change the Basslevel
         queue.filtersChanged = true;
-        const curPos = oldConnection.state.subscription.player.state.resource.playbackDuration;
+        const curPos = oldConnection.state.subscription.player.state.resource?.playbackDuration || 0;
         oldConnection.state.subscription.player.stop();
         oldConnection.state.subscription.player.play(client.getResource(queue, queue.tracks[0].id, curPos));
     

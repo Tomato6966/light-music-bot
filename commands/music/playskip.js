@@ -1,13 +1,19 @@
 const { getVoiceConnection } = require("@discordjs/voice");
 const { default: YouTube } = require('youtube-sr');
-
+const { Permissions } = require("discord.js");
 module.exports = {
     name: "playskip",
     aliases: ["ps"],
     description: "Plays Music in your Voice Channel and skips to it",
     run: async (client, message, args, prefix) => {
         if(!message.member.voice.channelId) return message.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);
-        const { channel } = message.member.voice; // get the voice channel
+        if(!message.member.voice.channel?.permissionsFor(message.guild?.me)?.has(Permissions.FLAGS.CONNECT)) {
+            return message.reply({ content: "👎 **I'm missing the Permission to Connect to your Voice-Channel!**"}).catch(() => null);
+        }
+        if(!message.member.voice.channel?.permissionsFor(message.guild?.me)?.has(Permissions.FLAGS.SPEAK)) {
+            return message.reply({ content: "👎 **I'm missing the Permission to Speak in your Voice-Channel!**"}).catch(() => null);
+        }
+             
         // get an old connection
         const oldConnection = getVoiceConnection(message.guild.id);
         if(oldConnection && oldConnection.joinConfig.channelId != message.member.voice.channelId) return message.reply("👎 **We are not in the same Voice-Channel**!").catch(() => null);

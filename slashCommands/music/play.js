@@ -1,6 +1,6 @@
 const { getVoiceConnection } = require("@discordjs/voice");
 const { default: YouTube } = require('youtube-sr');
-
+const { Permissions } = require("discord.js");
 module.exports = {
     name: "play",
     description: "Plays Music in your Voice Channel",
@@ -13,14 +13,20 @@ module.exports = {
         },
     ],
     run: async (client, interaction, args, prefix) => {
-        if(!interaction.member.voice.channelId) return interaction.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);
-        const { channel } = interaction.member.voice; // get the voice channel
+        if(!interaction.member.voice.channelId) return interaction.reply({ ephemeral: true, content:"👎 **Please join a Voice-Channel first!**"}).catch(() => null);
+        if(!interaction.member.voice.channel?.permissionsFor(interaction.guild?.me)?.has(Permissions.FLAGS.CONNECT)) {
+            return interaction.reply({ephemeral: true, content: "👎 **I'm missing the Permission to Connect to your Voice-Channel!**"}).catch(() => null);
+        }
+        if(!interaction.member.voice.channel?.permissionsFor(interaction.guild?.me)?.has(Permissions.FLAGS.SPEAK)) {
+            return interaction.reply({ephemeral: true, content: "👎 **I'm missing the Permission to Speak in your Voice-Channel!**"}).catch(() => null);
+        }
+         
         // get an old connection
         const oldConnection = getVoiceConnection(interaction.guild.id);
-        if(oldConnection && oldConnection.joinConfig.channelId != interaction.member.voice.channelId) return interaction.reply("👎 **We are not in the same Voice-Channel**!").catch(() => null);
-        
+        if(oldConnection && oldConnection.joinConfig.channelId != interaction.member.voice.channelId) return interaction.reply({ ephemeral: true, content: "👎 **We are not in the same Voice-Channel**!"}).catch(() => null);
+    
         const track = args.join(" ");
-        if(!args[0]) return interaction.reply(`👎 Please add the wished Music via: \`${prefix}play <Name/Link>\``).catch(() => null);
+        if(!args[0]) return interaction.reply({ ephemeral: true, content:`👎 Please add the wished Music via: \`${prefix}play <Name/Link>\``}).catch(() => null);
         // Regexpressions for testing the search string
         const youtubRegex = /^(https?:\/\/)?(www\.)?(m\.|music\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
         const playlistRegex = /^.*(list=)([^#\&\?]*).*/gi;
@@ -36,14 +42,14 @@ module.exports = {
         if(!oldConnection) {
             // try to join the voice channel
             try {
-                await client.joinVoiceChannel(channel)
+                await client.joinVoiceChannel(interaction.member.voice.channel)
             } catch (e){ console.error(e);
-                return interaction.reply(`❌ Could not join the VC because: \`\`\`${e.interaction || e}`.substr(0, 1950) + `\`\`\``).catch(() => null);
+                return interaction.reply({ ephemeral: true, content:`❌ Could not join the VC because: \`\`\`${e.interaction || e}`.substr(0, 1950) + `\`\`\``}).catch(() => null);
             }
         }
         try {
             // try to play the requested song
-            await interaction.reply(`🔍 *Searching **${track}** ...*`).catch(() => null);
+            await interaction.reply({ ephemeral: true, content:`🔍 *Searching **${track}** ...*`}).catch(() => null);
             // get the queue
             let queue = client.queues.get(interaction.guild.id); 
             // If a fresh channel join is needed, and a old queue exists, delete it!
@@ -68,23 +74,23 @@ module.exports = {
             else {
                 song = await YouTube.searchOne(track); 
             }
-            if(!song && !playlist) return interaction.editReply(`❌ **Failed looking up for ${track}!**`);
+            if(!song && !playlist) return interaction.editReply({ ephemeral: true, content: `❌ **Failed looking up for ${track}!**`});
             /* FOR NO PLAYLIST REQUESTS */
             if(!playlist) {
                 // if there is no queue create one and start playing
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
-                    await client.playSong(channel, song);
+                    await client.playSong(interaction.member.voice.channel, song);
                     // Add the song to the queue
                     const newQueue = client.createQueue(song, interaction.user, interaction.channelId)
                     client.queues.set(interaction.guild.id, newQueue)
                     // edit the loading interaction     
-                    return interaction.editReply(`▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``).catch(() => null);
+                    return interaction.editReply({ ephemeral: false, content: `▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``}).catch(() => null);
                 }
                 // Add the song to the queue
                 queue.tracks.push(client.createSong(song, interaction.user))
                 // edit the loading interaction     
-                return interaction.editReply(`👍 **Queued at \`${client.queuePos(queue.tracks.length - 1)}\`: __${song.title}__** - \`${song.durationFormatted}\``).catch(() => null);
+                return interaction.editReply({ ephemeral: false, content: `👍 **Queued at \`${client.queuePos(queue.tracks.length - 1)}\`: __${song.title}__** - \`${song.durationFormatted}\`` }).catch(() => null);
             } 
             /* FOR PLAYLIST REQUEST */
             else {
@@ -93,22 +99,22 @@ module.exports = {
                 // if there is no queue create one and start playing
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
-                    await client.playSong(channel, song);
+                    await client.playSong(interaction.member.voice.channel, song);
                     // Add the playlist songs to the queue
                     const newQueue = client.createQueue(song, interaction.user, interaction.channelId)
                     playlist.videos.slice(1).forEach(song => newQueue.tracks.push(client.createSong(song, interaction.user)))
                     client.queues.set(interaction.guild.id, newQueue)
                     // edit the loading interaction     
-                    return interaction.editReply(`▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``).catch(() => null);
+                    return interaction.editReply({ ephemeral: false, content: `▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``}).catch(() => null);
                 }
                 // Add the playlist songs to the queue
                 playlist.videos.slice(1).forEach(song => queue.tracks.push(client.createSong(song, interaction.user)))
                 // edit the loading interaction                    
-                return interaction.editReply(`👍 **Queued at \`${client.queuePos(queue.tracks.length - (playlist.videos.length - 1))}\`: __${song.title}__** - \`${song.durationFormatted}\`\n> **Added \`${playlist.videos.length - 1} Songs\` from the Playlist:**\n> __**${playlist.title}**__`).catch(() => null);
+                return interaction.editReply({ ephemeral: false, content: `👍 **Queued at \`${client.queuePos(queue.tracks.length - (playlist.videos.length - 1))}\`: __${song.title}__** - \`${song.durationFormatted}\`\n> **Added \`${playlist.videos.length - 1} Songs\` from the Playlist:**\n> __**${playlist.title}**__`}).catch(() => null);
             }
 
         } catch (e){ console.error(e);
-            return interaction.reply(`❌ Could not play the Song because: \`\`\`${e.interaction || e}`.substr(0, 1950) + `\`\`\``).catch(() => null);
+            return interaction.reply({ ephemeral: true, content:`❌ Could not play the Song because: \`\`\`${e.interaction || e}`.substr(0, 1950) + `\`\`\``}).catch(() => null);
         }
     },
 };

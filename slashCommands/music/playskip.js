@@ -1,6 +1,6 @@
 const { getVoiceConnection } = require("@discordjs/voice");
 const { default: YouTube } = require('youtube-sr');
-
+const { Permissions } = require("discord.js");
 module.exports = {
     name: "playskip",
     description: "Plays Music in your Voice Channel and skips to it",
@@ -13,21 +13,27 @@ module.exports = {
         },
     ],
     run: async (client, interaction, args, prefix) => {
-        if(!interaction.member.voice.channelId) return interaction.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);
-        const { channel } = interaction.member.voice; // get the voice channel
+        if(!interaction.member.voice.channelId) return interaction.reply({ ephemeral: true, content: "👎 **Please join a Voice-Channel first!**"}).catch(() => null);
+        if(!interaction.member.voice.channel?.permissionsFor(interaction.guild?.me)?.has(Permissions.FLAGS.CONNECT)) {
+            return interaction.reply({ephemeral: true, content: "👎 **I'm missing the Permission to Connect to your Voice-Channel!**"}).catch(() => null);
+        }
+        if(!interaction.member.voice.channel?.permissionsFor(interaction.guild?.me)?.has(Permissions.FLAGS.SPEAK)) {
+            return interaction.reply({ephemeral: true, content: "👎 **I'm missing the Permission to Speak in your Voice-Channel!**"}).catch(() => null);
+        }
+             
         // get an old connection
         const oldConnection = getVoiceConnection(interaction.guild.id);
-        if(oldConnection && oldConnection.joinConfig.channelId != interaction.member.voice.channelId) return interaction.reply("👎 **We are not in the same Voice-Channel**!").catch(() => null);
+        if(oldConnection && oldConnection.joinConfig.channelId != interaction.member.voice.channelId) return interaction.reply({ ephemeral: true, content: "👎 **We are not in the same Voice-Channel**!"}).catch(() => null);
         const queue = client.queues.get(interaction.guild.id); // get the queue
         if(!queue) { 
-            return interaction.reply(`👎 **Nothing playing right now**`).catch(() => null);
+            return interaction.reply({ ephemeral: true, content: `👎 **Nothing playing right now**`}).catch(() => null);
         }
         // no new songs (and no current)
         if(!queue.tracks || queue.tracks.length <= 1) { 
-            return interaction.reply(`👎 **Nothing to skip**`).catch(() => null);
+            return interaction.reply({ ephemeral: true, content: `👎 **Nothing to skip**`}).catch(() => null);
         }
         const track = args.join(" ");
-        if(!args[0]) return interaction.reply(`👎 Please add the wished Music via: \`${prefix}playskip <Name/Link>\``).catch(() => null);
+        if(!args[0]) return interaction.reply({ ephemeral: true, content: `👎 Please add the wished Music via: \`${prefix}playskip <Name/Link>\``}).catch(() => null);
         // Regexpressions for testing the search string
         const youtubRegex = /^(https?:\/\/)?(www\.)?(m\.|music\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
         const playlistRegex = /^.*(list=)([^#\&\?]*).*/gi;
@@ -42,7 +48,7 @@ module.exports = {
             
         try {
             // try to play the requested song
-            await interaction.reply(`🔍 *Searching **${track}** ...*`).catch(() => null);
+            await interaction.reply({ ephemeral: true, content: `🔍 *Searching **${track}** ...*`}).catch(() => null);
             // get song from the link
             if(isYT && isSong && !isList) {
                 song = await YouTube.getVideo(track); 
@@ -60,7 +66,7 @@ module.exports = {
             else {
                 song = await YouTube.searchOne(track); 
             }
-            if(!song && !playlist) return interaction.editReply(`❌ **Failed looking up for ${track}!**`);
+            if(!song && !playlist) return interaction.editReply({ ephemeral: true, content: `❌ **Failed looking up for ${track}!**`});
             /* FOR NO PLAYLIST REQUESTS */
             if(!playlist) {
                 // Add the song to the queue
@@ -68,7 +74,7 @@ module.exports = {
                 // skip the track
                 oldConnection.state.subscription.player.stop();
                 // edit the loading interaction     
-                return interaction.editReply(`▶️ **Now playing and skipping to: __${song.title}__** - \`${song.durationFormatted}\``).catch(() => null);
+                return interaction.editReply({ ephemeral: false, content: `▶️ **Now playing and skipping to: __${song.title}__** - \`${song.durationFormatted}\``}).catch(() => null);
             } 
             /* FOR PLAYLIST REQUEST */
             else {
@@ -81,11 +87,11 @@ module.exports = {
                 // skip the track
                 oldConnection.state.subscription.player.stop();
                 // edit the loading interaction                    
-                return interaction.editReply(`👍 **Now playing and skipping to: __${song.title}__** - \`${song.durationFormatted}\`\n> **Added \`${playlist.videos.length - 1} Songs\` from the Playlist:**\n> __**${playlist.title}**__`).catch(() => null);
+                return interaction.editReply({ ephemeral: false, content: `👍 **Now playing and skipping to: __${song.title}__** - \`${song.durationFormatted}\`\n> **Added \`${playlist.videos.length - 1} Songs\` from the Playlist:**\n> __**${playlist.title}**__`}).catch(() => null);
             }
 
         } catch (e){ console.error(e);
-            return interaction.reply(`❌ Could not play the Song because: \`\`\`${e.interaction || e}`.substr(0, 1950) + `\`\`\``).catch(() => null);
+            return interaction.reply({ ephemeral: true, content: `❌ Could not play the Song because: \`\`\`${e.interaction || e}`.substr(0, 1950) + `\`\`\``}).catch(() => null);
         }
     },
 };
