@@ -36,10 +36,18 @@ module.exports = async (client) => {
         })
 
     client.on(`ready`, async () => {
-        // Register for a single guild
-        client.guilds.cache
-            .get(`940221247218909244`)
-            .commands.set(slashCommandsArray);
+        
+        if(client.deploySlash.enabled) {
+            if(client.deploySlash.guild) {
+               client.guilds.cache
+               .get(client.deploySlash.guild)
+               .commands.set(slashCommandsArray); 
+            } else {
+                client.application.commands.set(slashCommandsArray);
+            }
+
+        } 
+        
         // set it global, for everyone
         // await client.application.commands.set(slashCommandsArray);
     });
