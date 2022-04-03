@@ -28,10 +28,6 @@ module.exports = {
         if(!queue) { 
             return interaction.reply({ ephemeral: true, content: `👎 **Nothing playing right now**`}).catch(() => null);
         }
-        // no new songs (and no current)
-        if(!queue.tracks || queue.tracks.length < 1) { 
-            return interaction.reply({ ephemeral: true, content: `👎 **Nothing to skip**`}).catch(() => null);
-        }
         const track = args.join(" ");
         if(!args[0]) return interaction.reply({ ephemeral: true, content: `👎 Please add the wished Music via: \`${prefix}playskip <Name/Link>\``}).catch(() => null);
         // Regexpressions for testing the search string
