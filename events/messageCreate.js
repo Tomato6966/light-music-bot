@@ -6,7 +6,7 @@ module.exports = async (client, message) => {
     const prefixRegex = new RegExp(`^(<@!?${client.user.id}>|${escapeRegex(prefix)})\\s*`);
     if (!prefixRegex.test(message.content)) return 
     const [, matchedPrefix] = message.content.match(prefixRegex);
-    const [ cmdName, ...args ] = message.content.slice(client.config.prefix.length).trim().split(/ +/g);
+    const [ cmdName, ...args ] = message.content.slice(matchedPrefix).trim().split(/ +/g);
     if (args.length === 0){
         if(matchedPrefix.includes(client.user.id))
           return message.reply({embeds: [new MessageEmbed()
