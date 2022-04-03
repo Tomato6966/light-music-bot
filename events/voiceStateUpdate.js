@@ -10,34 +10,35 @@ module.exports = async (client, oldState, newState) => {
             console.log(e)
         }
     }
-    if (
-        (!oldState.streaming === false && newState.streaming === true)   ||
-        (oldState.streaming === true && !newState.streaming === false)   ||
-        (!oldState.serverDeaf === false && newState.serverDeaf === true) ||
-        (oldState.serverDeaf === true && !newState.serverDeaf === false) ||
-        (!oldState.serverMute === false && newState.serverMute === true) ||
-        (oldState.serverMute === true && !newState.serverMute === false) || 
-        (!oldState.selfDeaf === false && newState.selfDeaf === true)     ||
-        (oldState.selfDeaf === true && !newState.selfDeaf === false)     ||
-        (!oldState.selfMute === false && newState.selfMute === true)     ||
-        (oldState.selfMute === true && !newState.selfMute === false)     ||
-        (!oldState.selfVideo === false && newState.selfVideo === true)   ||
-        (oldState.selfVideo === true && !newState.selfVideo === false) 
-     ) return;
+    function stateChange(one, two) {
+        if(one === false && two === true || one === true && two === false) return true;
+        else return false;
+    }
+    const o = oldState;
+    const n = newState; 
+    if (stateChange(o.streaming, n.streaming) || 
+      stateChange(o.serverDeaf, n.serverDeaf) || 
+      stateChange(o.serverMute, n.serverMute) || 
+      stateChange(o.selfDeaf, n.selfDeaf) || 
+      stateChange(o.selfMute, n.selfMute) || 
+      stateChange(o.selfVideo, n.selfVideo)) return;
     // Destroy connection if channel gets emtpy
-    if (!oldState.channelId && newState.channelId) {
+    // new Channel joined
+    if (!o.channelId && n.channelId) {
         return;
     }
-    if (oldState.channelId && !newState.channelId) {
-        const connection = getVoiceConnection(newState.guild.id);
-        if(oldState.channel.members.filter(m => !m.user.bot && !m.voice.selfDeaf && !m.voice.serverDeaf).size > 1) return;
-        if(connection && connection.joinConfig.channelId == oldState.channelId) connection.destroy();
+    // channel left
+    if (o.channelId && !n.channelId) {
+        const connection = getVoiceConnection(n.guild.id);
+        if(o.channel.members.filter(m => !m.user.bot && !m.voice.selfDeaf && !m.voice.serverDeaf).size > 1) return;
+        if(connection && connection.joinConfig.channelId == o.channelId) connection.destroy();
         return;
     }
-    if (oldState.channelId && newState.channelId) {
-        const connection = getVoiceConnection(newState.guild.id);
-        if(oldState.channel.members.filter(m => !m.user.bot && !m.voice.selfDeaf && !m.voice.serverDeaf).size > 1) return;
-        if(connection && connection.joinConfig.channelId == oldState.channelId) connection.destroy();
+    // channel swapped - register a LEAVE
+    if (o.channelId && n.channelId) {
+        const connection = getVoiceConnection(n.guild.id);
+        if(o.channel.members.filter(m => !m.user.bot && !m.voice.selfDeaf && !m.voice.serverDeaf).size > 1) return;
+        if(connection && connection.joinConfig.channelId == o.channelId) connection.destroy();
         return;
     }
 }
