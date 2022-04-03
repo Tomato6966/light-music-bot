@@ -21,10 +21,6 @@ module.exports = {
         if(!queue) { 
             return message.reply(`👎 **Nothing playing right now**`).catch(() => null);
         }
-        // no new songs (and no current)
-        if(!queue.tracks || queue.tracks.length <= 1) { 
-            return message.reply(`👎 **Not enough Songs in the Queue**`).catch(() => null);
-        }
         const track = args.join(" ");
         if(!args[0]) return message.reply(`👎 Please add the wished Music via: \`${prefix}playtop <Name/Link>\``).catch(() => null);
         // Regexpressions for testing the search string
