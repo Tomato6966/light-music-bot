@@ -29,7 +29,7 @@ module.exports = {
             return interaction.reply({ ephemeral: true, content: `👎 **Nothing playing right now**`}).catch(() => null);
         }
         // no new songs (and no current)
-        if(!queue.tracks || queue.tracks.length <= 1) { 
+        if(!queue.tracks || queue.tracks.length < 1) { 
             return interaction.reply({ ephemeral: true, content: `👎 **Nothing to skip**`}).catch(() => null);
         }
         const track = args.join(" ");
