@@ -1,7 +1,7 @@
 const { getVoiceConnection } = require("@discordjs/voice");
 module.exports = {
     name: "remove",
-    args: ["delete"],
+    aliases: ["delete"],
     description: "Removes a specific Track from the Queue",
     run: async (client, message, args, prefix) => {
         if(!message.member.voice.channelId) return message.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);

@@ -1,7 +1,7 @@
 const { getVoiceConnection } = require("@discordjs/voice");
 module.exports = {
     name: "skip",
-    args: ["s", "fs", "forceskip"],
+    aliases: ["s", "fs", "forceskip"],
     description: "Skips the current Track",
     run: async (client, message, args, prefix) => {
         if(!message.member.voice.channelId) return message.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);

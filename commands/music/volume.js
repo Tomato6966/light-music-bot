@@ -1,7 +1,7 @@
 const { getVoiceConnection } = require("@discordjs/voice");
 module.exports = {
     name: "volume",
-    args: ["vol"],
+    aliases: ["vol"],
     description: "Changes the Volume of the Music",
     run: async (client, message, args, prefix) => {
         if(!message.member.voice.channelId) return message.reply("👎 **Please join a Voice-Channel first!**").catch(() => null);
