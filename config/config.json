@@ -1,4 +1,5 @@
 {
    "token": "",
-   "prefix": "$"
+   "prefix": "$",
+   "YOUTUBE_LOGIN_COOKIE": "optional"
 }
