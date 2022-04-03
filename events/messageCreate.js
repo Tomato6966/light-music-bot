@@ -2,7 +2,6 @@ const { MessageEmbed } = require("discord.js");
 module.exports = async (client, message) => {
     // Slash Command Handling
     if (message.author.bot || !message.guild) return 
-    if(message.author.id != "442355791412854784") return;
     let { prefix } = client.config;
     const prefixRegex = new RegExp(`^(<@!?${client.user.id}>|${escapeRegex(prefix)})\\s*`);
     if (!prefixRegex.test(message.content)) return 
