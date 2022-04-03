@@ -115,17 +115,25 @@ module.exports = client => {
         if(effects.reverse) Qargs += `,areverse`
         if(effects.treble) Qargs += `,treble=g=5`
         if(Qargs.startsWith(",")) Qargs = Qargs.substring(1)
-    
-        const resource = createAudioResource(dcYtdl(client.getYTLink(songInfoId), {
+        const requestOpts = {
             filter: "audioonly",
             fmt: "mp3",
-            highWaterMark: 1 << 50, // 1024 * 1024 * 64 
+            highWaterMark: 1 << 62, 
+            liveBuffer: 1 << 62,
+            dlChunkSize: 0,
             seek: Math.floor(seekTime / 1000),
-            bitrate: 320,
-            liveBuffer: 40000,
-            quality: "highestaudio",
+            bitrate: queue?.bitrate || 128,
+            quality: "lowestaudio",
             encoderArgs: Qargs ? ["-af", Qargs ] : ['-af', 'bass=g=6,dynaudnorm=f=200'] // queue.filters
-        }), {
+        };
+        if(client.config.YOUTUBE_LOGIN_COOKIE && client.config.YOUTUBE_LOGIN_COOKIE.length > 10) {
+            requestOpts.requestOptions = {
+                headers: {
+                  cookie: client.config.YOUTUBE_LOGIN_COOKIE,
+                }
+            }
+        }
+        const resource = createAudioResource(dcYtdl(client.getYTLink(songInfoId), requestOpts), {
             inlineVolume: true
         });
         const volume = queue && queue.volume && queue.volume <= 150 && queue.volume >= 1 ? (queue.volume / 100) : 0.15;  // queue.volume / 100;
@@ -255,7 +263,7 @@ module.exports = client => {
         return `${length}${str[length] ? str[length] : "th"}`
     }
 
-    client.createQueue = (song, user, channelId) => {
+    client.createQueue = (song, user, channelId, bitrate = 128) => {
         return {
             textChannel: channelId,
             paused: false,
@@ -288,6 +296,7 @@ module.exports = client => {
             tracks: [ client.createSong(song, user) ],
             previous: undefined,
             creator: user,
+            bitrate: bitrate
         }
     }
 }

@@ -74,8 +74,10 @@ module.exports = {
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
                     await client.playSong(message.member.voice.channel, song);
-                    // Add the song to the queue
-                    const newQueue = client.createQueue(song, message.author, message.channelId)
+                    // get bitrate
+                    const bitrate = Math.floor(message.member.voice.channel.bitrate / 1000);
+                    // Add the playlist songs to the queue
+                    const newQueue = client.createQueue(song, message.author, message.channelId, bitrate)
                     client.queues.set(message.guild.id, newQueue)
                     // edit the loading message     
                     return m.edit(`▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``).catch(() => null);
@@ -93,8 +95,10 @@ module.exports = {
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
                     await client.playSong(message.member.voice.channel, song);
+                    // get bitrate
+                    const bitrate = Math.floor(message.member.voice.channel.bitrate / 1000);
                     // Add the playlist songs to the queue
-                    const newQueue = client.createQueue(song, message.author, message.channelId)
+                    const newQueue = client.createQueue(song, message.author, message.channelId, bitrate)
                     playlist.videos.slice(1).forEach(song => newQueue.tracks.push(client.createSong(song, message.author)))
                     client.queues.set(message.guild.id, newQueue)
                     // edit the loading message     

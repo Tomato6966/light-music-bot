@@ -81,8 +81,10 @@ module.exports = {
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
                     await client.playSong(interaction.member.voice.channel, song);
-                    // Add the song to the queue
-                    const newQueue = client.createQueue(song, interaction.user, interaction.channelId)
+                    // get bitrate
+                    const bitrate = Math.floor(interaction.member.voice.channel.bitrate / 1000);
+                    // Add the playlist songs to the queue
+                    const newQueue = client.createQueue(song, interaction.user, interaction.channelId, bitrate)
                     client.queues.set(interaction.guild.id, newQueue)
                     // edit the loading interaction     
                     return interaction.editReply({ ephemeral: false, content: `▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``}).catch(() => null);
@@ -100,8 +102,10 @@ module.exports = {
                 if(!queue || queue.tracks.length == 0) { 
                     // play the song in the voice channel
                     await client.playSong(interaction.member.voice.channel, song);
+                    // get bitrate
+                    const bitrate = Math.floor(interaction.member.voice.channel.bitrate / 1000);
                     // Add the playlist songs to the queue
-                    const newQueue = client.createQueue(song, interaction.user, interaction.channelId)
+                    const newQueue = client.createQueue(song, interaction.user, interaction.channelId, bitrate)
                     playlist.videos.slice(1).forEach(song => newQueue.tracks.push(client.createSong(song, interaction.user)))
                     client.queues.set(interaction.guild.id, newQueue)
                     // edit the loading interaction     
