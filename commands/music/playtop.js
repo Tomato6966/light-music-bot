@@ -67,9 +67,12 @@ module.exports = {
             else {
                 // get the song, or the first playlist song
                 song = song ? song : playlist.videos[0];
+                // remove the song which got added
+                const index = playlist.videos.findIndex(s => s.id == song.id) || 0;
+                playlist.videos.splice(index, 1) 
                 const playlistSongs = []
                 // Add the playlist songs to the queue
-                playlist.videos.slice(1).forEach(song => playlistSongs.push(client.createSong(song, message.author)))
+                playlist.videos.forEach(song => playlistSongs.push(client.createSong(song, message.author)))
                 queue.tracks = [queue.tracks[0], client.createSong(song, message.author), ...playlistSongs, ...queue.tracks.slice(1)]
                 // edit the loading message                    
                 return m.edit(`👍 **Queued at \`1st\`: __${song.title}__** - \`${song.durationFormatted}\`\n> **Added \`${playlist.videos.length - 1} Songs\` from the Playlist:**\n> __**${playlist.title}**__`).catch(() => null);
