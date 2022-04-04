@@ -260,7 +260,7 @@ module.exports = client => {
             2: "nd",
             3: "rd",
         }
-        return `${length}${str[length] ? str[length] : "th"}`
+        return `${length}${str[length % 10] ? str[length % 10] : "th"}`
     }
 
     client.createQueue = (song, user, channelId, bitrate = 128) => {
