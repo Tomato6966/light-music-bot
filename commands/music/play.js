@@ -72,13 +72,13 @@ module.exports = {
             if(!playlist) {
                 // if there is no queue create one and start playing
                 if(!queue || queue.tracks.length == 0) { 
-                    // play the song in the voice channel
-                    await client.playSong(message.member.voice.channel, song);
                     // get bitrate
                     const bitrate = Math.floor(message.member.voice.channel.bitrate / 1000);
                     // Add the playlist songs to the queue
                     const newQueue = client.createQueue(song, message.author, message.channelId, bitrate)
                     client.queues.set(message.guild.id, newQueue)
+                    // play the song in the voice channel
+                    await client.playSong(message.member.voice.channel, song);
                     // edit the loading message     
                     return m.edit(`▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``).catch(() => null);
                 }
@@ -91,21 +91,24 @@ module.exports = {
             else {
                 // get the song, or the first playlist song
                 song = song ? song : playlist.videos[0];
+                // remove the song which got added
+                const index = playlist.videos.findIndex(s => s.id == song.id) || 0;
+                playlist.videos.splice(index, 1)    
                 // if there is no queue create one and start playing
                 if(!queue || queue.tracks.length == 0) { 
-                    // play the song in the voice channel
-                    await client.playSong(message.member.voice.channel, song);
                     // get bitrate
                     const bitrate = Math.floor(message.member.voice.channel.bitrate / 1000);
                     // Add the playlist songs to the queue
                     const newQueue = client.createQueue(song, message.author, message.channelId, bitrate)
-                    playlist.videos.slice(1).forEach(song => newQueue.tracks.push(client.createSong(song, message.author)))
+                    playlist.videos.forEach(song => newQueue.tracks.push(client.createSong(song, message.author)))
                     client.queues.set(message.guild.id, newQueue)
+                    // play the song in the voice channel
+                    await client.playSong(message.member.voice.channel, song);
                     // edit the loading message     
-                    return m.edit(`▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\``).catch(() => null);
+                    return m.edit(`▶️ **Now Playing: __${song.title}__** - \`${song.durationFormatted}\`\n> **Added \`${playlist.videos.length - 1} Songs\` from the Playlist:**\n> __**${playlist.title}**__`).catch(() => null);
                 }
                 // Add the playlist songs to the queue
-                playlist.videos.slice(1).forEach(song => queue.tracks.push(client.createSong(song, message.author)))
+                playlist.videos.forEach(song => queue.tracks.push(client.createSong(song, message.author)))
                 // edit the loading message                    
                 return m.edit(`👍 **Queued at \`${client.queuePos(queue.tracks.length - (playlist.videos.length - 1))}\`: __${song.title}__** - \`${song.durationFormatted}\`\n> **Added \`${playlist.videos.length - 1} Songs\` from the Playlist:**\n> __**${playlist.title}**__`).catch(() => null);
             }
