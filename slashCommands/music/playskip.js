@@ -76,6 +76,9 @@ module.exports = {
             else {
                 // get the song, or the first playlist song
                 song = song ? song : playlist.videos[0];
+                // remove the song which got added
+                const index = playlist.videos.findIndex(s => s.id == song.id) || 0;
+                playlist.videos.splice(index, 1) 
                 const playlistSongs = []
                 // Add the playlist songs to the queue
                 playlist.videos.slice(1).forEach(song => playlistSongs.push(client.createSong(song, interaction.user)))
