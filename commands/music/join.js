@@ -9,6 +9,13 @@ module.exports = {
             const oldConnection = getVoiceConnection(message.guild.id);
             if(oldConnection) return message.reply({ content: `👎 **I'm already connected in <#${oldConnection.joinConfig.channelId}>**!`}).catch(() => null);
             
+            if(!message.member.voice.channel?.permissionsFor(message.guild?.me)?.has(Permissions.FLAGS.CONNECT)) {
+                return message.reply({content: `👎 **I'm missing the Permission to Connect to your Voice-Channel!**`}).catch(() => null);
+            }
+            if(!message.member.voice.channel?.permissionsFor(message.guild?.me)?.has(Permissions.FLAGS.SPEAK)) {
+                return message.reply({content: `👎 **I'm missing the Permission to speak in your Voice-Channel!**`}).catch(() => null);
+            }
+
             await client.joinVoiceChannel(message.member.voice.channel);
             message.reply({content: "🔗 **Joined your VC!**"}).catch(() => null);
         } catch(e) { 
