@@ -1,4 +1,5 @@
 const { getVoiceConnection } = require("@discordjs/voice");
+const { Permissions } = require("discord.js");
 module.exports = {
     name: "join",
     description: "Joins a Voice Channel",
